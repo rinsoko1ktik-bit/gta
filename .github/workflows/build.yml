@@ -1,0 +1,33 @@
+name: Build zokii mod menu
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang lld make curl unzip
+      - name: OpenOrbis toolchain
+        run: |
+          curl -sL https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/latest/download/v0.5.3.tar.gz -o oo.tgz || true
+          mkdir -p oo && tar -xzf oo.tgz -C oo --strip-components=1 || true
+          echo "OO_PS4_TOOLCHAIN=$PWD/oo" >> $GITHUB_ENV
+      - name: GoldHEN Plugins SDK
+        run: |
+          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugins_SDK.git sdk
+          echo "GOLDHEN_SDK=$PWD/sdk" >> $GITHUB_ENV
+      - name: Lua 5.4
+        run: |
+          curl -sL https://www.lua.org/ftp/lua-5.4.6.tar.gz | tar xz
+          echo "LUA_DIR=$PWD/lua-5.4.6/src" >> $GITHUB_ENV
+      - name: Build
+        run: make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zokii_mod_menu
+          path: |
+            *.prx
+            scripts/
+            
